@@ -25,12 +25,13 @@
     #define TFT_CS              15
     #define TFT_DC              2
     #define TFT_RST             -1      // Tied to EN/Reset
-    #define TFT_BL              21      // Backlight PWM active HIGH
+    #define TFT_BL              27      // Backlight PWM on 2.4" (GPIO 27)
+    #define TFT_BL_ALT          21      // Alternate Backlight pin on some CYD revisions (GPIO 21)
     #define TFT_INVERT          false   // Standard ILI9341
 
-    // XPT2046 Resistive Touchscreen (SPI)
+    // XPT2046 Resistive Touchscreen (VSPI)
     #define TOUCH_CS            33
-    #define TOUCH_INT           36      // IRQ (Input only)
+    #define TOUCH_INT           -1      // Polling mode (avoid GPIO36 floating IRQ)
     #define TOUCH_CLK           25
     #define TOUCH_MOSI          32
     #define TOUCH_MISO          39

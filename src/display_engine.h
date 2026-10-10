@@ -82,7 +82,7 @@ public:
             cfg.x_max = 3900;
             cfg.y_min = 200;
             cfg.y_max = 3700;
-            cfg.pin_int = TOUCH_INT;
+            cfg.pin_int = -1; // Polling mode (avoid GPIO36 floating interrupt freeze)
             cfg.bus_shared = false;
             cfg.offset_rotation = 0;
             cfg.spi_host = VSPI_HOST; // SPI3_HOST on ESP32
@@ -90,7 +90,7 @@ public:
             cfg.pin_mosi = TOUCH_MOSI;
             cfg.pin_miso = TOUCH_MISO;
             cfg.pin_cs   = TOUCH_CS;
-            cfg.freq = 2500000;
+            cfg.freq = 2000000;
             _touch_instance.config(cfg);
             _panel_instance.setTouch(&_touch_instance);
         }

@@ -19,10 +19,11 @@ void displayTask(void* parameter) {
 
 void setup() {
     Serial.begin(115200);
-    delay(200);
+    delay(300);
     Serial.println("\n========================================");
-    Serial.println("   OpenCyberHUD Firmware v8.09 Open    ");
+    Serial.printf("   OpenCyberHUD Firmware v8.09 [%s]\n", BOARD_NAME);
     Serial.println("========================================");
+    Serial.printf("[System] Free Heap at Boot: %u bytes\n", ESP.getFreeHeap());
 
     // 1. Initialize Persistent Config (NVS)
     ConfigManager::instance().begin();
@@ -32,9 +33,12 @@ void setup() {
     LEDIndicator::instance().begin();
 
     // 3. Initialize Display
+    Serial.println("[Display] Initializing LCD & Backlight...");
     DisplayEngine::instance().begin();
+    Serial.printf("[Display] Free Heap after Display Init: %u bytes\n", ESP.getFreeHeap());
 
     // 4. Initialize Vietmap BLE Peripheral Server
+    Serial.println("[BLE] Starting BLE Peripheral...");
     VietmapBLE::instance().begin("VIETMAP_HUD");
 
     // 5. Initialize OBD2 BLE Client (if enabled)
@@ -47,7 +51,7 @@ void setup() {
     xTaskCreatePinnedToCore(
         displayTask,
         "DisplayTask",
-        4096,
+        8192,
         NULL,
         1,
         &DisplayTaskHandle,
@@ -55,7 +59,7 @@ void setup() {
     );
     #endif
 
-    Serial.println("[System] Ready. Advertising as VIETMAP_HUD...");
+    Serial.printf("[System] All systems initialized. Free Heap: %u bytes\n", ESP.getFreeHeap());
 }
 
 void loop() {

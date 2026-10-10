@@ -12,12 +12,25 @@ DisplayEngine& DisplayEngine::instance() {
 }
 
 void DisplayEngine::begin() {
+#if defined(BOARD_ESP32_2432S024)
+    // Drive both GPIO 27 and GPIO 21 HIGH to guarantee backlight on all CYD 2.4" and 2.8" revisions
+    pinMode(27, OUTPUT);
+    digitalWrite(27, HIGH);
+    pinMode(21, OUTPUT);
+    digitalWrite(21, HIGH);
+#endif
+
     _tft.init();
     _tft.setRotation(ConfigManager::instance().config().display_rotation);
     setBrightness(ConfigManager::instance().config().day_brightness);
+    _tft.fillScreen(TFT_BLACK);
 
     _canvas.setColorDepth(16);
-    _canvas.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT);
+    if (!_canvas.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT)) {
+        // Fallback to 8-bit color sprite if 16-bit 153KB contiguous block is unavailable
+        _canvas.setColorDepth(8);
+        _canvas.createSprite(SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
     _canvas.setTextDatum(textdatum_t::middle_center);
 
     _bootStartTime = millis();
@@ -26,6 +39,15 @@ void DisplayEngine::begin() {
 
 void DisplayEngine::setBrightness(uint8_t brightness) {
     _tft.setBrightness(brightness);
+#if defined(BOARD_ESP32_2432S024)
+    if (brightness > 0) {
+        digitalWrite(27, HIGH);
+        digitalWrite(21, HIGH);
+    } else {
+        digitalWrite(27, LOW);
+        digitalWrite(21, LOW);
+    }
+#endif
 }
 
 void DisplayEngine::handleLDR() {
