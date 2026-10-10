@@ -1,0 +1,15 @@
+{
+  "name": "OpenCyberHUD - ESP32-2432S024 (CYD 2.4 TFT ILI9341)",
+  "version": "1.0.0",
+  "home_assistant_domain": "esphome",
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "firmware/esp32-2432s024/bootloader.bin", "offset": 4096 },
+        { "path": "firmware/esp32-2432s024/partitions.bin", "offset": 32768 },
+        { "path": "firmware/esp32-2432s024/firmware.bin", "offset": 65536 }
+      ]
+    }
+  ]
+}
