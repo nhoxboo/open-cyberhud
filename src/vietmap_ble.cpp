@@ -2,23 +2,34 @@
 #include "config_manager.h"
 #include "audio_buzzer.h"
 
-// Vietmap BLE UUIDs
-static const char* SERVICE_UUID        = "0000fff0-0000-1000-8000-00805f9b34fb";
-static const char* CHAR_NOTIFY_UUID    = "0000fff1-0000-1000-8000-00805f9b34fb";
-static const char* CHAR_WRITE_UUID     = "0000fff2-0000-1000-8000-00805f9b34fb";
-static const char* CHAR_CONFIG_UUID    = "0000fff3-0000-1000-8000-00805f9b34fb";
+// Vietmap BLE 16-bit Standard UUIDs
+static const uint16_t SERVICE_UUID        = 0xFFF0;
+static const uint16_t CHAR_NOTIFY_UUID    = 0xFFF1;
+static const uint16_t CHAR_WRITE_UUID     = 0xFFF2;
+static const uint16_t CHAR_CONFIG_UUID    = 0xFFF3;
 
-// Device Info Service
-static const char* DEVINFO_SVC_UUID    = "0000180a-0000-1000-8000-00805f9b34fb";
-static const char* DEVINFO_VER_UUID    = "00002a26-0000-1000-8000-00805f9b34fb";
+// Standard Device Info Service (0x180A)
+static const uint16_t DEVINFO_SVC_UUID    = 0x180A;
+static const uint16_t DEVINFO_VER_UUID    = 0x2A26; // Firmware Revision
+static const uint16_t DEVINFO_MDL_UUID    = 0x2A24; // Model Number
+static const uint16_t DEVINFO_MFR_UUID    = 0x2A29; // Manufacturer
 
 class ServerCallbacks : public NimBLEServerCallbacks {
-    void onConnect(NimBLEServer* pServer) override {
+    void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc) override {
+        Serial.printf("[BLE] Client connected! Handle: %d, Peer: %s\n",
+                      desc->conn_handle, NimBLEAddress(desc->peer_ota_addr).toString().c_str());
         VietmapBLE::instance().handleConnect();
+        pServer->updateConnParams(desc->conn_handle, 12, 24, 0, 400);
     }
+
     void onDisconnect(NimBLEServer* pServer) override {
+        Serial.println("[BLE] Client disconnected! Restarting advertising...");
         VietmapBLE::instance().handleDisconnect();
         NimBLEDevice::startAdvertising();
+    }
+
+    void onMTUChange(uint16_t MTU, ble_gap_conn_desc* desc) override {
+        Serial.printf("[BLE] MTU negotiated: %d\n", MTU);
     }
 };
 
@@ -44,40 +55,57 @@ void VietmapBLE::begin(const char* deviceName) {
     NimBLEDevice::init(deviceName);
     NimBLEDevice::setPower(ESP_PWR_LVL_P9);
     NimBLEDevice::setSecurityAuth(false, false, false);
+    NimBLEDevice::setMTU(512);
 
     _pServer = NimBLEDevice::createServer();
     _pServer->setCallbacks(new ServerCallbacks());
 
-    // 1. Device Info Service
-    NimBLEService* pDevInfoSvc = _pServer->createService(DEVINFO_SVC_UUID);
-    NimBLECharacteristic* pVerChar = pDevInfoSvc->createCharacteristic(DEVINFO_VER_UUID, NIMBLE_PROPERTY::READ);
-    pVerChar->setValue("v@8.09");
+    // 1. Device Info Service (0x180A)
+    NimBLEService* pDevInfoSvc = _pServer->createService(NimBLEUUID(DEVINFO_SVC_UUID));
+    pDevInfoSvc->createCharacteristic(NimBLEUUID(DEVINFO_VER_UUID), NIMBLE_PROPERTY::READ)->setValue("v@8.09");
+    pDevInfoSvc->createCharacteristic(NimBLEUUID(DEVINFO_MDL_UUID), NIMBLE_PROPERTY::READ)->setValue("H1V");
+    pDevInfoSvc->createCharacteristic(NimBLEUUID(DEVINFO_MFR_UUID), NIMBLE_PROPERTY::READ)->setValue("VIETMAP");
     pDevInfoSvc->start();
 
-    // 2. Vietmap Custom Service
-    NimBLEService* pCustomSvc = _pServer->createService(SERVICE_UUID);
+    // 2. Vietmap Custom Service (0xFFF0)
+    NimBLEService* pCustomSvc = _pServer->createService(NimBLEUUID(SERVICE_UUID));
 
-    _pNotifyChar = pCustomSvc->createCharacteristic(CHAR_NOTIFY_UUID, NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
-    _pWriteChar  = pCustomSvc->createCharacteristic(CHAR_WRITE_UUID, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR);
-    _pConfigChar = pCustomSvc->createCharacteristic(CHAR_CONFIG_UUID, NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::READ);
+    _pNotifyChar = pCustomSvc->createCharacteristic(
+        NimBLEUUID(CHAR_NOTIFY_UUID),
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY | NIMBLE_PROPERTY::INDICATE
+    );
 
+    _pWriteChar  = pCustomSvc->createCharacteristic(
+        NimBLEUUID(CHAR_WRITE_UUID),
+        NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::READ
+    );
     _pWriteChar->setCallbacks(new WriteCallbacks());
+
+    _pConfigChar = pCustomSvc->createCharacteristic(
+        NimBLEUUID(CHAR_CONFIG_UUID),
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY
+    );
     _pConfigChar->setCallbacks(new WriteCallbacks());
 
     pCustomSvc->start();
 
-    // 3. BLE Advertising
+    // 3. BLE Advertising Setup
     NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
-    pAdvertising->addServiceUUID(SERVICE_UUID);
+    pAdvertising->addServiceUUID(NimBLEUUID(SERVICE_UUID));
     pAdvertising->setScanResponse(true);
-    pAdvertising->setMinPreferred(0x06);
-    pAdvertising->setMaxPreferred(0x12);
+    pAdvertising->setMinPreferred(0x06); // 7.5 ms
+    pAdvertising->setMaxPreferred(0x12); // 22.5 ms
+    pAdvertising->setName(deviceName);
     NimBLEDevice::startAdvertising();
+
+    Serial.printf("[BLE] Server started. Advertising name '%s' with Service 0x%04X\n", deviceName, SERVICE_UUID);
 }
 
 void VietmapBLE::handleConnect() {
     _telemetry.connected = true;
     _telemetry.last_packet_time = millis();
+    // Proactively send handshake response upon connection
+    sendHandshakeResponse();
 }
 
 void VietmapBLE::handleDisconnect() {
@@ -116,6 +144,10 @@ void VietmapBLE::sendHandshakeResponse() {
     if (_pNotifyChar) {
         _pNotifyChar->setValue(handshakeResp, sizeof(handshakeResp));
         _pNotifyChar->notify();
+    }
+    if (_pConfigChar) {
+        _pConfigChar->setValue(handshakeResp, sizeof(handshakeResp));
+        _pConfigChar->notify();
     }
 }
 

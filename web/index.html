@@ -3,39 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenCyberHUD Studio & Flasher</title>
+  <title>OpenCyberHUD Studio — Web Flasher & BLE Config</title>
+  
   <!-- ESP Web Tools -->
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+
   <style>
     :root {
-      --bg: #0b1329;
-      --sidebar-bg: #111a33;
-      --card-bg: #162244;
-      --card-border: #233554;
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1e293b;
       --primary: #00d2ff;
       --primary-hover: #3a7bd5;
-      --accent: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
       --text: #f8fafc;
       --text-dim: #94a3b8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --sidebar-bg: #070c18;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
     body {
-      background: var(--bg);
+      background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
-    /* Top Navbar */
+    /* Header */
     .navbar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 16px 32px;
+      justify-content: space-between;
+      padding: 16px 28px;
       background: var(--sidebar-bg);
       border-bottom: 1px solid var(--card-border);
     }
@@ -43,109 +51,105 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
-      background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+      background: linear-gradient(135deg, #00d2ff, #928dab);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .nav-links {
       display: flex;
       gap: 16px;
-      align-items: center;
     }
     .nav-btn {
       color: var(--text-dim);
       text-decoration: none;
       font-size: 14px;
       font-weight: 600;
-      padding: 8px 14px;
-      border-radius: 8px;
-      transition: 0.2s;
+      transition: color 0.2s;
     }
     .nav-btn:hover {
       color: var(--primary);
-      background: rgba(0, 210, 255, 0.08);
     }
 
-    /* Layout */
+    /* Container */
     .container {
-      max-width: 1080px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 28px 16px;
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 0 20px;
       flex: 1;
+      width: 100%;
     }
 
     /* Tabs */
     .tabs-nav {
       display: flex;
       gap: 10px;
-      background: var(--sidebar-bg);
-      padding: 6px;
-      border-radius: 12px;
-      border: 1px solid var(--card-border);
-      margin-bottom: 28px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 12px;
     }
     .tab-btn {
-      flex: 1;
-      padding: 12px 20px;
-      border: none;
       background: transparent;
+      border: 1px solid transparent;
       color: var(--text-dim);
-      font-weight: 700;
-      font-size: 15px;
+      padding: 10px 20px;
       border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+    }
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
     }
     .tab-btn.active {
-      background: var(--card-bg);
+      background: rgba(0, 210, 255, 0.1);
       color: var(--primary);
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(0, 210, 255, 0.3);
+      border-color: rgba(0, 210, 255, 0.3);
     }
 
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+    }
 
-    /* Card */
+    /* Cards */
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
+      border-radius: 12px;
       padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
-    h2.card-title {
-      font-size: 18px;
+    .card-title {
+      font-size: 16px;
       font-weight: 700;
-      margin-bottom: 18px;
-      color: #fff;
+      color: var(--text);
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    /* Board Selection Cards */
+    /* Board Selection */
     .board-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }
     .board-card {
-      border: 2px solid var(--card-border);
       background: #0d162d;
-      border-radius: 12px;
-      padding: 20px;
+      border: 2px solid var(--card-border);
+      border-radius: 10px;
+      padding: 18px;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: all 0.2s;
       position: relative;
     }
     .board-card:hover {
@@ -155,48 +159,42 @@
     .board-card.selected {
       border-color: var(--primary);
       background: rgba(0, 210, 255, 0.06);
-      box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+    }
+    .board-card .board-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .board-card .board-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.5;
     }
     .board-tag {
       position: absolute;
       top: 14px;
       right: 14px;
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(0, 210, 255, 0.15);
-      color: var(--primary);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.1);
+      color: #38bdf8;
       font-weight: 700;
-    }
-    .board-name {
-      font-size: 17px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 8px;
-    }
-    .board-desc {
-      font-size: 13px;
-      color: var(--text-dim);
-      line-height: 1.6;
     }
 
-    /* Flash Box */
+    /* Flash Button Area */
     .flash-box {
       text-align: center;
-      background: #0d162d;
+      padding: 30px 20px;
+      background: #070c18;
+      border-radius: 10px;
       border: 1px dashed var(--card-border);
-      border-radius: 14px;
-      padding: 32px 20px;
-      margin-top: 16px;
-    }
-    esp-web-install-button {
-      --esp-tools-button-border-radius: 10px;
-      --esp-tools-button-color: #0284c7;
-      font-size: 17px;
     }
     .flash-notes {
       margin-top: 20px;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-dim);
       line-height: 1.6;
       max-width: 600px;
@@ -271,8 +269,8 @@
 
     /* HUD Preview Box */
     .hud-box {
-      width: 200px;
-      height: 200px;
+      width: 220px;
+      height: 220px;
       border-radius: 50%;
       background: #000;
       border: 3px solid #334155;
@@ -283,11 +281,34 @@
       justify-content: center;
       position: relative;
       box-shadow: 0 0 20px rgba(0, 210, 255, 0.15);
+      transition: all 0.3s;
+      overflow: hidden;
     }
-    .hud-box.square {
+    .hud-box.landscape {
       border-radius: 12px;
-      width: 240px;
-      height: 180px;
+      width: 320px;
+      height: 200px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 12px 16px;
+    }
+    .hud-left-pane {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 48%;
+      position: relative;
+    }
+    .hud-right-pane {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 48%;
+      border-left: 1px solid #1e293b;
+      padding-left: 10px;
     }
     .hud-val {
       font-size: 52px;
@@ -302,30 +323,36 @@
       letter-spacing: 1px;
     }
     .hud-badge-speed {
-      position: absolute;
-      top: 18px;
-      right: 18px;
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       background: #fff;
       border: 3px solid #ef4444;
       color: #000;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 900;
       display: flex;
       align-items: center;
       justify-content: center;
+      margin-bottom: 4px;
     }
     .hud-cam-badge {
-      position: absolute;
-      bottom: 16px;
       background: #f59e0b;
       color: #000;
       font-size: 10px;
       font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 10px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-top: 6px;
+    }
+    .hud-turn-badge {
+      background: #1e293b;
+      color: #00d2ff;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin-bottom: 6px;
     }
 
     .badge {
@@ -345,7 +372,7 @@
       padding: 12px;
       font-family: monospace;
       font-size: 12px;
-      height: 130px;
+      height: 140px;
       overflow-y: auto;
       color: #38ef7d;
       margin-top: 16px;
@@ -382,7 +409,7 @@
 <body>
   <div class="navbar">
     <div class="logo">
-      <span>🛡️ OpenCyberHUD</span>
+      <span>🛡️ OpenCyberHUD Studio</span>
     </div>
     <div class="nav-links">
       <a href="https://github.com/nhoxboo/open-cyberhud" target="_blank" class="nav-btn">⭐ GitHub Repo</a>
@@ -401,7 +428,7 @@
       <div class="card">
         <h2 class="card-title">Bước 1: Chọn Phiên Bản Bo Mạch Của Bạn</h2>
         <div class="board-grid">
-          <div class="board-card selected" id="card-2424" onclick="selectBoard('2424')">
+          <div class="board-card" id="card-2424" onclick="selectBoard('2424')">
             <span class="board-tag">ESP32-C3</span>
             <div class="board-name">🎯 ESP32-2424S012</div>
             <div class="board-desc">
@@ -411,13 +438,13 @@
             </div>
           </div>
 
-          <div class="board-card" id="card-2432" onclick="selectBoard('2432')">
+          <div class="board-card selected" id="card-2432" onclick="selectBoard('2432')">
             <span class="board-tag">ESP32 CYD</span>
-            <div class="board-name">📟 ESP32-2432S024</div>
+            <div class="board-name">📟 ESP32-2432S024 (CYD 2.4")</div>
             <div class="board-desc">
-              &bull; <strong>Màn hình:</strong> 2.4" Chữ nhật ILI9341 (320x240)<br>
-              &bull; <strong>Cảm ứng & Cảm biến:</strong> XPT2046 + Quang trở LDR Auto Brightness<br>
-              &bull; <strong>Âm thanh:</strong> Loa công suất Onboard
+              &bull; <strong>Màn hình:</strong> 2.4" Chữ nhật ILI9341 (320x240 Ngang)<br>
+              &bull; <strong>Cảm ứng & Quang trở:</strong> XPT2046 + LDR Auto Brightness<br>
+              &bull; <strong>Âm thanh & LED:</strong> Loa công suất Onboard + RGB LED
             </div>
           </div>
         </div>
@@ -425,11 +452,11 @@
         <h2 class="card-title">Bước 2: Cắm Cáp USB & Tiến Hành Nạp Trực Tuyến</h2>
         <div class="flash-box">
           <p id="flash-desc" style="font-size: 14px; color: var(--text-dim); margin-bottom: 20px;">
-            Đang chọn bản build cho <strong>ESP32-2424S012 (Round 1.28")</strong>. Kết nối cổng USB vào máy tính và bấm nút nạp.
+            Đang chọn bản build cho <strong>ESP32-2432S024 (CYD 2.4" Ngang 320x240)</strong>. Kết nối cổng USB vào máy tính và bấm nút nạp.
           </p>
 
           <div id="flash-btn-container">
-            <esp-web-install-button manifest="manifest_2424s012.json"></esp-web-install-button>
+            <esp-web-install-button manifest="manifest_2432s024.json"></esp-web-install-button>
           </div>
 
           <div class="flash-notes">
@@ -449,7 +476,7 @@
           <span id="ble-status-badge" class="badge badge-off">Chưa kết nối</span>
         </h2>
         <p style="font-size: 13px; color: var(--text-dim); margin-bottom: 16px;">
-          Bật Bluetooth máy tính/điện thoại, bật nguồn OpenCyberHUD, sau đó bấm kết nối để đồng bộ dữ liệu.
+          Bật Bluetooth trên máy tính/điện thoại, cấp nguồn OpenCyberHUD, sau đó bấm nút tìm thiết bị.
         </p>
         <button class="btn btn-primary" id="btn-ble" onclick="toggleBle()">📡 Tìm & Kết Nối Thiết Bị</button>
       </div>
@@ -458,11 +485,17 @@
         <!-- Live HUD Simulator -->
         <div class="card">
           <h2 class="card-title">Mô Phỏng Trực Quan HUD</h2>
-          <div class="hud-box" id="hud-preview-box">
-            <div class="hud-badge-speed" id="sim-limit-val">60</div>
-            <div class="hud-val" id="sim-speed-val">58</div>
-            <div class="hud-unit">KM/H</div>
-            <div class="hud-cam-badge" id="sim-cam-val">CAM 350M</div>
+          
+          <div class="hud-box landscape" id="hud-preview-box">
+            <div class="hud-left-pane">
+              <div class="hud-badge-speed" id="sim-limit-val">60</div>
+              <div class="hud-val" id="sim-speed-val">58</div>
+              <div class="hud-unit">KM/H</div>
+            </div>
+            <div class="hud-right-pane">
+              <div class="hud-turn-badge" id="sim-turn-val">➔ 250m</div>
+              <div class="hud-cam-badge" id="sim-cam-val">CAM TOC DO 350M</div>
+            </div>
           </div>
 
           <div class="form-group" style="margin-top: 20px;">
@@ -483,10 +516,10 @@
           <div class="form-group">
             <label>Góc xoay màn hình (Rotation):</label>
             <select id="cfg-rot">
-              <option value="0">0° (Mặc định)</option>
-              <option value="1">90° (Ngang)</option>
-              <option value="2">180° (Đảo chiều)</option>
-              <option value="3">270° (Ngang ngược)</option>
+              <option value="1">1: Ngang chuẩn 320x240 (Khuyên dùng cho CYD 2.4")</option>
+              <option value="3">3: Ngang đảo chiều 320x240 (270°)</option>
+              <option value="0">0: Dọc 240x320 (Khuyên dùng cho màn tròn 2424S012)</option>
+              <option value="2">2: Dọc đảo chiều 240x320 (180°)</option>
             </select>
           </div>
 
@@ -546,13 +579,13 @@
             <tr>
               <td><strong>Display Bus</strong></td>
               <td>GC9A01 SPI (MOSI:7, SCLK:6, CS:10, DC:2, BL:3)</td>
-              <td>ILI9341 SPI (MISO:12, MOSI:13, SCLK:14, CS:15, DC:2, BL:21)</td>
+              <td>ILI9341 SPI (MISO:12, MOSI:13, SCLK:14, CS:15, DC:2, BL:27/21)</td>
               <td>ST7789 SPI (MOSI:23, SCLK:18, CS:5, DC:2, BL:15)</td>
             </tr>
             <tr>
               <td><strong>Cảm ứng (Touch)</strong></td>
               <td>CST816D (SDA:4, SCL:5, INT:0, RST:1)</td>
-              <td>XPT2046 (CS:33, CLK:25, MOSI:32, MISO:39, IRQ:36)</td>
+              <td>XPT2046 (CS:33, CLK:25, MOSI:32, MISO:39, Polling)</td>
               <td>Tùy chọn I2C (SDA:21, SCL:22)</td>
             </tr>
             <tr>
@@ -564,7 +597,7 @@
             <tr>
               <td><strong>LED Chỉ thị</strong></td>
               <td>WS2812B (GPIO 2)</td>
-              <td>RGB 3-Pin (R:4, G:16, B:17)</td>
+              <td>RGB 3-Pin (R:4, G:16, B:17 Active-Low)</td>
               <td>WS2812B (GPIO 27)</td>
             </tr>
             <tr>
@@ -612,12 +645,12 @@
         document.getElementById('card-2424').classList.add('selected');
         desc.innerHTML = 'Đang chọn bản build cho <strong>ESP32-2424S012 (Round 1.28" GC9A01)</strong>. Kết nối cổng USB vào máy tính và bấm nút nạp.';
         container.innerHTML = '<esp-web-install-button manifest="manifest_2424s012.json"></esp-web-install-button>';
-        previewBox.classList.remove('square');
+        previewBox.className = 'hud-box';
       } else {
         document.getElementById('card-2432').classList.add('selected');
-        desc.innerHTML = 'Đang chọn bản build cho <strong>ESP32-2432S024 (CYD 2.4" TFT ILI9341)</strong>. Kết nối cổng USB vào máy tính và bấm nút nạp.';
+        desc.innerHTML = 'Đang chọn bản build cho <strong>ESP32-2432S024 (CYD 2.4" TFT ILI9341 Ngang 320x240)</strong>. Kết nối cổng USB vào máy tính và bấm nút nạp.';
         container.innerHTML = '<esp-web-install-button manifest="manifest_2432s024.json"></esp-web-install-button>';
-        previewBox.classList.add('square');
+        previewBox.className = 'hud-box landscape';
       }
     }
 
@@ -637,9 +670,11 @@
     // BLE Logic
     let bleDevice = null;
     let configChar = null;
-    const SERVICE_UUID = "0000fff0-0000-1000-8000-00805f9b34fb";
-    const CHAR_NOTIFY   = "0000fff1-0000-1000-8000-00805f9b34fb";
-    const CHAR_WRITE    = "0000fff2-0000-1000-8000-00805f9b34fb";
+    const SERVICE_UUID_16 = 0xFFF0;
+    const SERVICE_UUID_128 = "0000fff0-0000-1000-8000-00805f9b34fb";
+    const CHAR_CONFIG_16 = 0xFFF3;
+    const CHAR_WRITE_16  = 0xFFF2;
+    const CHAR_NOTIFY_16 = 0xFFF1;
 
     function log(msg) {
       const b = document.getElementById('ble-logs');
@@ -654,11 +689,32 @@
       }
 
       try {
-        log("[BLE] Đang quét thiết bị CyberHUD / OpenCyberHUD...");
-        bleDevice = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: "CyberHUD" }, { namePrefix: "OpenCyberHUD" }, { namePrefix: "H1V" }],
-          optionalServices: [SERVICE_UUID]
-        });
+        log("[BLE] Đang tìm kiếm thiết bị OpenCyberHUD / VIETMAP_HUD...");
+        
+        const optServices = [
+          SERVICE_UUID_16,
+          0x180A,
+          SERVICE_UUID_128,
+          "0000180a-0000-1000-8000-00805f9b34fb"
+        ];
+
+        try {
+          bleDevice = await navigator.bluetooth.requestDevice({
+            filters: [
+              { namePrefix: "VIETMAP" },
+              { namePrefix: "CyberHUD" },
+              { namePrefix: "OpenCyberHUD" },
+              { namePrefix: "H1V" }
+            ],
+            optionalServices: optServices
+          });
+        } catch (filterErr) {
+          log("[BLE] Thử chế độ quét toàn bộ thiết bị xung quanh...");
+          bleDevice = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: optServices
+          });
+        }
 
         bleDevice.addEventListener('gattserverdisconnected', () => {
           document.getElementById('ble-status-badge').innerText = 'Chưa kết nối';
@@ -670,19 +726,34 @@
           log("[BLE] Đã ngắt kết nối.");
         });
 
-        log("[BLE] Đang kết nối tới " + bleDevice.name + "...");
+        log("[BLE] Đang kết nối tới " + (bleDevice.name || "Thiết bị") + "...");
         const server = await bleDevice.gatt.connect();
-        const service = await server.getPrimaryService(SERVICE_UUID);
-        configChar = await service.getCharacteristic(CHAR_WRITE);
 
-        const notifyChar = await service.getCharacteristic(CHAR_NOTIFY);
-        await notifyChar.startNotifications();
-        notifyChar.addEventListener('characteristicvaluechanged', (e) => {
-          const val = new TextDecoder().decode(e.target.value);
-          log("[RX] " + val);
-        });
+        let service;
+        try {
+          service = await server.getPrimaryService(SERVICE_UUID_16);
+        } catch (e) {
+          service = await server.getPrimaryService(SERVICE_UUID_128);
+        }
 
-        document.getElementById('ble-status-badge').innerText = 'Đã kết nối: ' + bleDevice.name;
+        try {
+          configChar = await service.getCharacteristic(CHAR_CONFIG_16);
+        } catch (e) {
+          configChar = await service.getCharacteristic(CHAR_WRITE_16);
+        }
+
+        try {
+          const notifyChar = await service.getCharacteristic(CHAR_NOTIFY_16);
+          await notifyChar.startNotifications();
+          notifyChar.addEventListener('characteristicvaluechanged', (e) => {
+            const val = new TextDecoder().decode(e.target.value);
+            log("[RX] " + val);
+          });
+        } catch(e) {
+          log("[BLE] Notify setup: " + e.message);
+        }
+
+        document.getElementById('ble-status-badge').innerText = 'Đã kết nối: ' + (bleDevice.name || "OpenCyberHUD");
         document.getElementById('ble-status-badge').className = 'badge badge-on';
         document.getElementById('btn-ble').innerText = 'Ngắt Kết Nối';
         document.getElementById('btn-ble').className = 'btn btn-danger';

@@ -1,4 +1,5 @@
 #include "config_manager.h"
+#include "pin_definitions.h"
 
 static const char* PREFS_NAMESPACE = "openhud";
 
@@ -12,7 +13,13 @@ ConfigManager& ConfigManager::instance() {
 }
 
 void ConfigManager::loadDefaults() {
+#if defined(DEFAULT_ROTATION)
+    _config.display_rotation     = DEFAULT_ROTATION;
+#elif defined(BOARD_ESP32_2432S024)
+    _config.display_rotation     = 1; // Default Landscape (320x240)
+#else
     _config.display_rotation     = 0;
+#endif
     _config.show_clock           = true;
     _config.led_brightness       = 200;
     _config.led_color            = 1; // Blue
@@ -47,7 +54,12 @@ bool ConfigManager::load() {
     if (!_prefs.isKey("init")) {
         return false;
     }
-    _config.display_rotation     = _prefs.getUChar("rot", 0);
+#if defined(DEFAULT_ROTATION)
+    uint8_t defRot = DEFAULT_ROTATION;
+#else
+    uint8_t defRot = 0;
+#endif
+    _config.display_rotation     = _prefs.getUChar("rot", defRot);
     _config.show_clock           = _prefs.getBool("clock", true);
     _config.led_brightness       = _prefs.getUChar("led_br", 200);
     _config.led_color            = _prefs.getUChar("led_col", 1);

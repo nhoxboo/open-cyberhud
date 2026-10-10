@@ -8,12 +8,13 @@
 
 #if defined(BOARD_ESP32_2432S024)
     // ---------------------------------------------------------------------
-    // Profile: ESP32-2432S024 (CYD 2.4" TFT ILI9341 240x320 + XPT2046 Touch)
+    // Profile: ESP32-2432S024 (CYD 2.4" TFT ILI9341 320x240 + XPT2046 Touch)
     // MCU: ESP32-WROOM-32 (Xtensa Dual-Core 240MHz)
     // ---------------------------------------------------------------------
     #define BOARD_NAME          "ESP32-2432S024"
-    #define SCREEN_WIDTH        240
-    #define SCREEN_HEIGHT       320
+    #define SCREEN_WIDTH        320     // Landscape Width
+    #define SCREEN_HEIGHT       240     // Landscape Height
+    #define DEFAULT_ROTATION    1       // Landscape Mode (0: Portrait, 1: Landscape, 2: Inv Portrait, 3: Inv Landscape)
     #define SCREEN_IS_ROUND     false
     #define HAS_TOUCHSCREEN     true
     #define TOUCH_TYPE_XPT2046  true
@@ -61,10 +62,12 @@
     #define BOARD_NAME          "ESP32-2424S012"
     #define SCREEN_WIDTH        240
     #define SCREEN_HEIGHT       240
+    #define DEFAULT_ROTATION    0
     #define SCREEN_IS_ROUND     true
     #define HAS_TOUCHSCREEN     true
 
     // GC9A01 SPI Display Pins
+    #define TFT_MISO            -1
     #define TFT_MOSI            7
     #define TFT_SCLK            6
     #define TFT_CS              10
@@ -98,9 +101,11 @@
     #define BOARD_NAME          "ESP32-S3-Round-1.28"
     #define SCREEN_WIDTH        240
     #define SCREEN_HEIGHT       240
+    #define DEFAULT_ROTATION    0
     #define SCREEN_IS_ROUND     true
     #define HAS_TOUCHSCREEN     true
 
+    #define TFT_MISO            -1
     #define TFT_MOSI            11
     #define TFT_SCLK            10
     #define TFT_CS              9
@@ -131,9 +136,11 @@
     #define BOARD_NAME          "ESP32-C3-SuperMini"
     #define SCREEN_WIDTH        240
     #define SCREEN_HEIGHT       240
+    #define DEFAULT_ROTATION    0
     #define SCREEN_IS_ROUND     false
     #define HAS_TOUCHSCREEN     false
 
+    #define TFT_MISO            -1
     #define TFT_MOSI            6
     #define TFT_SCLK            4
     #define TFT_CS              7
@@ -158,9 +165,11 @@
     #define BOARD_NAME          "CyberHUD-ESP32"
     #define SCREEN_WIDTH        240
     #define SCREEN_HEIGHT       240
+    #define DEFAULT_ROTATION    0
     #define SCREEN_IS_ROUND     true
     #define HAS_TOUCHSCREEN     false
 
+    #define TFT_MISO            -1
     #define TFT_MOSI            23
     #define TFT_SCLK            18
     #define TFT_CS              5

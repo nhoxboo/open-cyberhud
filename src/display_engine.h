@@ -51,8 +51,13 @@ public:
             cfg.pin_cs           = TFT_CS;
             cfg.pin_rst          = TFT_RST;
             cfg.pin_busy         = -1;
+#if defined(BOARD_ESP32_2432S024)
+            cfg.panel_width      = 240;
+            cfg.panel_height     = 320;
+#else
             cfg.panel_width      = SCREEN_WIDTH;
             cfg.panel_height     = SCREEN_HEIGHT;
+#endif
             cfg.offset_x         = 0;
             cfg.offset_y         = 0;
             cfg.offset_rotation  = 0;
